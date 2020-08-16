@@ -28,6 +28,12 @@
     "chat-client-e2e": {
       "tags": [],
       "implicitDependencies": ["chat-client"]
+    },
+    "api": {
+      "tags": []
+    },
+    "chat": {
+      "tags": []
     }
   }
 }
