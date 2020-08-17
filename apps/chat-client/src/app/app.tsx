@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 import { ReactComponent as Logo } from './logo.svg';
 import star from './star.svg';
+import { Video } from '../components/video';
 
 const StyledApp = styled.div`
   font-family: sans-serif;
@@ -147,6 +148,7 @@ export const App = () => {
         <h1>Welcome to chat-client!</h1>
       </header>
       <main>
+        <Video />
         <h2>Resources &amp; Tools</h2>
         <p>Thank you for using and showing some ♥ for Nx.</p>
         <div className="flex github-star-container">
