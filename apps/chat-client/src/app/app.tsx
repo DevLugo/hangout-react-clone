@@ -6,6 +6,11 @@ import { ReactComponent as Logo } from './logo.svg';
 import star from './star.svg';
 import { Video } from '../components/video';
 
+// Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Button from 'react-bootstrap/Button';
+
+
 const StyledApp = styled.div`
   font-family: sans-serif;
   min-width: 300px;
@@ -145,11 +150,11 @@ export const App = () => {
     <StyledApp>
       <header className="flex">
         <Logo width="75" height="75" />
-        <h1>Welcome to chat-client!</h1>
+        <h1>Welcome to chat-client!</h1>        
       </header>
       <main>
         <Video />
-        <h2>Resources &amp; Tools</h2>
+        <h2>Resources &amp; Tools</h2>        
         <p>Thank you for using and showing some ♥ for Nx.</p>
         <div className="flex github-star-container">
           <a
