@@ -1,6 +1,12 @@
+// React Core
 import React, { useState, useEffect, useRef } from 'react';
+
+// Libraries
+import io from 'socket.io-client';
+
+import { ShareScreenIcon, CamOnIcon, CamOffIcon, MicOffIcon, MicOnIcon } from './icons';
 import { getDisplayStream } from '../helpers/media-access';
-import { ShareScreenIcon, CamOnIcon, CamOffIcon } from './icons';
+import VideoCall from '../helpers/simple-peer';
 
 interface Navigator {
   getUserMedia(
@@ -13,13 +19,16 @@ interface Navigator {
 export const Video = () => {
   const [localStream, setLocalStream] = useState({});
   const [camState, setCamState] = useState(false);
+  const [micState, setMicState] = useState(false);
+  const [socket, setSocket] = useState(null);
   const refVideo = useRef(null);
 
   useEffect(() => {
-    console.log('useeefect');
-    getUserMedia().then(() => {
-      console.log('inicializado');
-    });
+    const socket = io(process.env.REACT_APP_SIGNALING_SERVER)
+    //const videoCall = new VideoCall();
+    setSocket(socket);
+
+    getUserMedia()
   }, []);
 
   const getUserMedia = () => {
@@ -50,12 +59,19 @@ export const Video = () => {
     });
   };
 
+  const setAudioLocal = () => {
+    if (localStream.getAudioTracks().length > 0)
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled=!track.enabled
+      })
+    setMicState((prevState) => !prevState);
+    }
+
   const setVideoLocal = () => {
-    if (localStream.getVideoTracks().length > 0) {
+    if (localStream.getVideoTracks().length > 0)
       localStream.getVideoTracks().forEach((track) => {
         track.enabled = !track.enabled;
       });
-    }
     setCamState((prevState) => !prevState);
   };
 
@@ -69,22 +85,31 @@ export const Video = () => {
   return (
     <div className="video-wrapper">
       <div className="local-video-wrapper">
-        <video autoPlay id="localVideo" muted ref={refVideo} />
+        <video autoPlay id="localVideo" muted ref={refVideo} width="100%" />
       </div>
       <div className="controls">
         <button
           className="control-btn"
-          onClick={() => {
-            getDisplay();
-          }}
+          onClick={() => getDisplay()}
         >
           <ShareScreenIcon />
         </button>
         <button
+        className='control-btn'
+          onClick={() => setAudioLocal()}
+        >
+          {
+            micState?(
+              <MicOnIcon/>
+            ):(
+              <MicOffIcon/>
+            )
+          }
+        </button>
+
+        <button
           className="control-btn"
-          onClick={() => {
-            setVideoLocal();
-          }}
+          onClick={() => setVideoLocal()}
         >
           {camState ? <CamOnIcon /> : <CamOffIcon />}
         </button>

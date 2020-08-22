@@ -20,15 +20,34 @@ app.get('/api/:room', (req, res) => {
 });
 
 io.on('connection', socket =>{
-  socket.on('join-room', (roomId, userId) => {
-    socket.join(roomId)
-    socket.to(roomId).broadcast.emit('user-connected', userId);
-
-    socket.on('disconnect', () => {
-      socket.to(roomId).broadcast.emit('user-disconnected', userId);
-    })
+  socket.on('join', function (data) { 
+    socket.join(data.roomId);
+    socket.room = data.roomId;
+    const sockets = io.of('/').in().adapter.rooms[data.roomId];
+    if(sockets.length===1){
+        socket.emit('init')
+    }else{
+        if (sockets.length===2){
+            io.to(data.roomId).emit('ready')
+        }else{
+            socket.room = null
+            socket.leave(data.roomId)
+            socket.emit('full')
+        }
+    }
   });
-});
+
+  socket.on('signal', (data) => {
+      io.to(data.room).emit('desc', data.desc)        
+  })
+  socket.on('disconnect', () => {
+      const roomId = Object.keys(socket.adapter.rooms)[0]
+      if (socket.room){
+          io.to(socket.room).emit('disconnected')
+      }
+      
+  })
+})
 
 const port = process.env.port || 3333;
 server.listen(port, () => {
