@@ -3,6 +3,7 @@ import { BrowserRouter, Route } from 'react-router-dom';
 
 import { AccessRoom } from './../pages/accessRoom';
 import { Room } from './../pages/room';
+import { Video } from '../components/video';
 
 
 export const App = () => {
@@ -15,7 +16,7 @@ export const App = () => {
     <BrowserRouter>
       <React.Fragment>
         <Route path="/" exact component={AccessRoom} />
-        <Route path="/:roomId" exact component={Room} />
+        <Route path="/:roomId" render={(props) => <Video  {...props} /> }/>
       </React.Fragment>
     </BrowserRouter>
   );
