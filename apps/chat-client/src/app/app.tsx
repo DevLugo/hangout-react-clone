@@ -1,10 +1,11 @@
 import React from 'react';
+// import 'bootstrap/dist/css/bootstrap.css';
 import { BrowserRouter, Route } from 'react-router-dom';
 
 import { AccessRoom } from './../pages/accessRoom';
 import { Room } from './../pages/room';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
+
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
