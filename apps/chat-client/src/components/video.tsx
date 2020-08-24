@@ -5,8 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
 import { ShareScreenIcon, CamOnIcon, CamOffIcon, MicOffIcon, MicOnIcon } from './icons';
-import { getDisplayStream } from '../helpers/media-access';
-import VideoCall from '../helpers/simple-peer';
+import { getDisplayStream } from '../helpers/media-access.ts';
+import VideoCall from '../helpers/simple-peer.ts';
 
 interface Navigator {
   getUserMedia(
@@ -16,19 +16,54 @@ interface Navigator {
   ): void;
 }
 
-export const Video = () => {
+export const Video = ({ match }) => {
   const [localStream, setLocalStream] = useState({});
   const [camState, setCamState] = useState(false);
   const [micState, setMicState] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const [full, setFull] = useState(false);
+  const [initiator, setInitiator] = useState(false);
+
+  
+  const [peer, setPeer] = useState({});
+
+  let videoCall;
+
   const [socket, setSocket] = useState(null);
-  const refVideo = useRef(null);
+  const refCurrentVideo = useRef(null);
+  const refRemoteVideo = useRef(null);
+
 
   useEffect(() => {
-    const socket = io(process.env.REACT_APP_SIGNALING_SERVER)
-    //const videoCall = new VideoCall();
-    setSocket(socket);
+    const socket = io('http://localhost:3333')
+    console.log(process.env.REACT_APP_SIGNALING_SERVER)
+    videoCall = new VideoCall();
+    const { roomId } = match.params;
+    console.log(roomId)
+    getUserMedia().then(() => {
+      socket.emit('join', { roomId: roomId });
+    });
 
-    getUserMedia()
+    socket.on('ready', () => {
+      enter(roomId);
+    setAudioLocal()
+
+    });
+
+    socket.on('desc', data => {
+      if (data.type === 'offer' && initiator) return;
+      if (data.type === 'answer' && !initiator) return;
+      call(data)
+    });
+
+    socket.on('disconnected', () => {
+      setInitiator(true);
+    });
+
+    socket.on('full', () => {
+      setFull(true);
+    })
   }, []);
 
   const getUserMedia = () => {
@@ -49,7 +84,7 @@ export const Video = () => {
         op,
         (stream) => {
           setLocalStream(stream);
-          refVideo.current.srcObject = stream;
+          refCurrentVideo.current.srcObject = stream;
           resolve();
         },
         (err) => {
@@ -65,7 +100,7 @@ export const Video = () => {
         track.enabled=!track.enabled
       })
     setMicState((prevState) => !prevState);
-    }
+  }
 
   const setVideoLocal = () => {
     if (localStream.getVideoTracks().length > 0)
@@ -78,14 +113,52 @@ export const Video = () => {
   const getDisplay = () => {
     getDisplayStream().then((stream) => {
       setLocalStream(stream);
-      refVideo.current.srcObject = stream;
+      refCurrentVideo.current.srcObject = stream;
     });
   };
+
+  const enter = roomId => {
+    console.log("SSSAAAS")
+    setConnecting(true);
+    const peer = videoCall.init(
+      localStream,
+      initiator
+    )
+    setPeer(peer);
+    console.log("zzz")
+
+    peer.on('signal', data => {
+      const signal = {
+        room: roomId,
+        desc: data
+      };
+      socket.emit('signal', signal);
+    });
+
+    peer.on('stream', stream => {
+      refRemoteVideo.srcObject = stream;
+      setConnecting(false);
+      setWaiting(false);
+    });
+
+    peer.on('error', err => {
+      console.log(err);
+    });
+  }
+
+  const call = otherId => {
+    videoCall.connect(otherId);
+  }
+
+  const renderFull = () => {
+    if (full) return 'The room is full';
+  }
 
   return (
     <div className="video-wrapper">
       <div className="local-video-wrapper">
-        <video autoPlay id="localVideo" muted ref={refVideo} width="100%" />
+        <video autoPlay id="localVideo" muted ref={refCurrentVideo} width="400px" />
+        <video autoPlay id='remoteVideo' ref={refRemoteVideo} width="400px" />
       </div>
       <div className="controls">
         <button

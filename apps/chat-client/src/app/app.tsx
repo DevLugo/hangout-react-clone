@@ -4,6 +4,7 @@ import { BrowserRouter, Route } from 'react-router-dom';
 
 import { AccessRoom } from './../pages/accessRoom';
 import { Room } from './../pages/room';
+import { Video } from '../components/video';
 
 
 import Container from 'react-bootstrap/Container';
@@ -19,12 +20,10 @@ export const App = () => {
    */
   return (
     <BrowserRouter>
-      <Container fluid>
-        <React.Fragment>
-          <Route path="/" exact component={AccessRoom} />
-          <Route path="/:roomId" exact component={Room} />
-        </React.Fragment>
-      </Container>
+      <React.Fragment>
+        <Route path="/" exact component={AccessRoom} />
+        <Route path="/:roomId" render={(props) => <Video  {...props} />} />
+      </React.Fragment>
     </BrowserRouter>
   );
 };
