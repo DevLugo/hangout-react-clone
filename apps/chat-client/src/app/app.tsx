@@ -3,14 +3,15 @@ import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 
 import { AccessRoom } from './../pages/accessRoom';
-import { Room } from './../pages/room';
+// import { Room } from './../pages/room';
 import { Video } from '../components/video';
 
 
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+// import Container from 'react-bootstrap/Container';
+// import Row from 'react-bootstrap/Row';
+// import Col from 'react-bootstrap/Col';
 
+import '../app.scss';
 
 export const App = () => {
   /*
