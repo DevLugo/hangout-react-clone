@@ -1,10 +1,19 @@
 import React from 'react';
+// import 'bootstrap/dist/css/bootstrap.css';
 import { BrowserRouter, Route } from 'react-router-dom';
 
 import { AccessRoom } from './../pages/accessRoom';
-import { Room } from './../pages/room';
+// import { Room } from './../pages/room';
 import { Video } from '../components/video';
 
+
+// import Container from 'react-bootstrap/Container';
+// import Row from 'react-bootstrap/Row';
+// import Col from 'react-bootstrap/Col';
+
+// import bg from '../assets/img/universe.jpg';
+
+import '../styles/app.scss';
 
 export const App = () => {
   /*
@@ -16,7 +25,7 @@ export const App = () => {
     <BrowserRouter>
       <React.Fragment>
         <Route path="/" exact component={AccessRoom} />
-        <Route path="/:roomId" render={(props) => <Video  {...props} /> }/>
+        <Route path="/:roomId" render={(props) => <Video  {...props} />} />
       </React.Fragment>
     </BrowserRouter>
   );
