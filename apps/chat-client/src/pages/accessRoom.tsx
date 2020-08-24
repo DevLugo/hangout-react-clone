@@ -29,18 +29,20 @@ export const AccessRoom = () => {
 
     return (
         <div>
+            <h1 className="masthead-brand mb-3">Because we are infinitive</h1>
+
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
                 <Form.Group as={Row} controlId="formUsername">
                     <Col sm="10">
-                        <Form.Control required type="text" placeholder="ID Room" autoComplete="off" />
+                        <Form.Control required type="text" placeholder="Galaxy name" autoComplete="off" />
                         <Form.Control.Feedback type="invalid">
-                            Favor de ingresar un ID.
+                            Please enter a Galaxy.
                     </Form.Control.Feedback>
                     </Col>
 
                     <Col sm="2">
                         <Button variant="primary" type="submit">
-                            Join
+                            Warp
                         </Button>
                     </Col>
                 </Form.Group>

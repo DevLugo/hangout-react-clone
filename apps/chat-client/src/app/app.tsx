@@ -11,7 +11,9 @@ import { Video } from '../components/video';
 // import Row from 'react-bootstrap/Row';
 // import Col from 'react-bootstrap/Col';
 
-import '../app.scss';
+// import bg from '../assets/img/universe.jpg';
+
+import '../styles/app.scss';
 
 export const App = () => {
   /*
