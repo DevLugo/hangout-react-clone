@@ -1,4 +1,4 @@
-# HangoutClone
+# Hangout-Clone with react
 
 This project was generated using [Nx](https://nx.dev).
 
