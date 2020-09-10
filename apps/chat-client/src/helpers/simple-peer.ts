@@ -1,27 +1,29 @@
-import Peer from 'simple-peer';
+import SimplePeer from "simple-peer";
 
 export default class VideoCall {
-    peer = null;
+    
+    private peer: SimplePeer.Instance;
+
+
     init = (stream, initiator) => {
-        this.peer = new Peer({
-            initiator,
-            stream,
+        this.peer = new SimplePeer({
+            initiator: initiator,
+            stream: stream,
             trickle: false,
             reconnectTimer: 1000,
-            iceTransportPolicy: 'relay',
-            config: {
+            /*config: {
                 iceServers: [
-                    { urls: process.env.REACT_APP_STUN_SERVERS.split(',') },
-                    { 
-                        urls: process.env.REACT_APP_TURN_SERVERS.split(','),
-                        usernname: process.env.REACT_APP_TURN_USERNAME,
-                        credential: process.env.REACT_APP_TURN_CREDENCIAL,
-
-                    }
+                    { urls: ['stun:stun4.l.google.com:19302','turn:numb.viagenie.ca'] },
+                    {
+                        urls: ['stun:stun4.l.google.com:19302','turn:numb.viagenie.ca'],
+                        username: 'elugo.isi@gmail.com',
+                        credential: 'ronaldo2'
+                    },
                 ]
-            }
-        });
-        return this.peer;
+            }*/
+        })
+        return this.peer
+
     }
     connect = (otherId) => {
         this.peer.signal(otherId)
