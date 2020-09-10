@@ -7,6 +7,7 @@ import io from 'socket.io-client';
 import { ShareScreenIcon, CamOnIcon, CamOffIcon, MicOffIcon, MicOnIcon } from './icons';
 import { getDisplayStream } from '../helpers/media-access.ts';
 import VideoCall from '../helpers/simple-peer.ts';
+import { useDidUpdateEffect, useDidMount } from '../hooks/componentDidUpdate';
 
 interface Navigator {
   getUserMedia(
@@ -24,6 +25,11 @@ export const Video = ({ match }) => {
   const [waiting, setWaiting] = useState(false);
   const [full, setFull] = useState(false);
   const [initiator, setInitiator] = useState(false);
+  const [loads, setloads] = useState(0);
+  const didMount  = useRef(false);
+
+//apply this 
+//https://stackoverflow.com/questions/53179075/with-useeffect-how-can-i-skip-applying-an-effect-upon-the-initial-render
 
   
   const [peer, setPeer] = useState({});
@@ -34,7 +40,7 @@ export const Video = ({ match }) => {
   const refCurrentVideo = useRef(null);
   const refRemoteVideo = useRef(null);
 
-
+  
   useEffect(() => {
     const socket = io('http://localhost:3333')
     console.log(process.env.REACT_APP_SIGNALING_SERVER)
@@ -43,13 +49,10 @@ export const Video = ({ match }) => {
     console.log(roomId)
     getUserMedia().then(() => {
       socket.emit('join', { roomId: roomId });
+      setVideoLocal()
     });
 
-    socket.on('ready', () => {
-      enter(roomId);
-    setAudioLocal()
-
-    });
+    
 
     socket.on('desc', data => {
       if (data.type === 'offer' && initiator) return;
@@ -84,18 +87,29 @@ export const Video = ({ match }) => {
         op,
         (stream) => {
           setLocalStream(stream);
-          refCurrentVideo.current.srcObject = stream;
+          //refCurrentVideo.current.srcObject = stream;
           resolve();
         },
         (err) => {
+          reject()
           console.log('Ocurrió el siguiente error: ' + err);
         }
       );
     });
   };
 
+  
+  useEffect(() => {
+    
+    if (!didMount.current){
+      didMount.current = !didMount.current
+    }else{
+      refCurrentVideo.current.srcObject = localStream;
+    }
+  }, [localStream])
+
   const setAudioLocal = () => {
-    if (localStream.getAudioTracks().length > 0)
+   if (localStream.getAudioTracks().length > 0)
       localStream.getAudioTracks().forEach(track => {
         track.enabled=!track.enabled
       })
@@ -119,7 +133,13 @@ export const Video = ({ match }) => {
 
   const enter = roomId => {
     console.log("SSSAAAS")
-    setConnecting(true);
+
+    //setConnecting(true);
+    setVideoLocal()
+    console.log("YA PASO")
+    //setAudioLocal()
+    return 
+
     const peer = videoCall.init(
       localStream,
       initiator
@@ -147,6 +167,7 @@ export const Video = ({ match }) => {
   }
 
   const call = otherId => {
+    console.log("--------------")
     videoCall.connect(otherId);
   }
 
