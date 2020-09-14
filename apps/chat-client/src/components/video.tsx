@@ -19,6 +19,7 @@ interface Navigator {
 
 export const Video = ({ match }) => {
   const [localStream, setLocalStream] = useState({});
+  const [screenState, setscreenState] = useState(false);
   const [camState, setCamState] = useState(false);
   const [micState, setMicState] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -26,12 +27,12 @@ export const Video = ({ match }) => {
   const [full, setFull] = useState(false);
   const [initiator, setInitiator] = useState(false);
   const [loads, setloads] = useState(0);
-  const didMount  = useRef(false);
+  const didMount = useRef(false);
 
-//apply this 
-//https://stackoverflow.com/questions/53179075/with-useeffect-how-can-i-skip-applying-an-effect-upon-the-initial-render
+  //apply this
+  //https://stackoverflow.com/questions/53179075/with-useeffect-how-can-i-skip-applying-an-effect-upon-the-initial-render
 
-  
+
   const [peer, setPeer] = useState({});
 
   let videoCall;
@@ -40,7 +41,7 @@ export const Video = ({ match }) => {
   const refCurrentVideo = useRef(null);
   const refRemoteVideo = useRef(null);
 
-  
+
   useEffect(() => {
     const socket = io('http://localhost:3333')
     console.log(process.env.REACT_APP_SIGNALING_SERVER)
@@ -52,7 +53,7 @@ export const Video = ({ match }) => {
       setVideoLocal()
     });
 
-    
+
 
     socket.on('desc', data => {
       if (data.type === 'offer' && initiator) return;
@@ -98,20 +99,19 @@ export const Video = ({ match }) => {
     });
   };
 
-  
+
   useEffect(() => {
-    
-    if (!didMount.current){
+    if (!didMount.current) {
       didMount.current = !didMount.current
-    }else{
+    } else {
       refCurrentVideo.current.srcObject = localStream;
     }
   }, [localStream])
 
   const setAudioLocal = () => {
-   if (localStream.getAudioTracks().length > 0)
+    if (localStream.getAudioTracks().length > 0)
       localStream.getAudioTracks().forEach(track => {
-        track.enabled=!track.enabled
+        track.enabled = !track.enabled
       })
     setMicState((prevState) => !prevState);
   }
@@ -126,10 +126,15 @@ export const Video = ({ match }) => {
 
   const getDisplay = () => {
     getDisplayStream().then((stream) => {
+      setscreenState((prevState) => !prevState);
       setLocalStream(stream);
       refCurrentVideo.current.srcObject = stream;
     });
   };
+
+  localStream.oninactive = () => { // Detectamos cuando el usuario hace click en la opción de 'Dejar de compartir'
+    setscreenState((prevState) => !prevState);
+  }
 
   const enter = roomId => {
     console.log("SSSAAAS")
@@ -138,7 +143,7 @@ export const Video = ({ match }) => {
     setVideoLocal()
     console.log("YA PASO")
     //setAudioLocal()
-    return 
+    return
 
     const peer = videoCall.init(
       localStream,
@@ -175,38 +180,54 @@ export const Video = ({ match }) => {
     if (full) return 'The room is full';
   }
 
-  return (
-    <div className="video-wrapper">
-      <div className="local-video-wrapper">
-        <video autoPlay id="localVideo" muted ref={refCurrentVideo} width="400px" />
-        <video autoPlay id='remoteVideo' ref={refRemoteVideo} width="400px" />
-      </div>
-      <div className="controls">
-        <button
-          className="control-btn"
-          onClick={() => getDisplay()}
-        >
-          <ShareScreenIcon />
-        </button>
-        <button
-        className='control-btn'
-          onClick={() => setAudioLocal()}
-        >
-          {
-            micState?(
-              <MicOnIcon/>
-            ):(
-              <MicOffIcon/>
-            )
-          }
-        </button>
+  const Video = ({ state, id, reference }) => (
+    state && <video autoPlay id={id} muted ref={reference} width="1280px" />
+  );
 
-        <button
-          className="control-btn"
-          onClick={() => setVideoLocal()}
-        >
-          {camState ? <CamOnIcon /> : <CamOffIcon />}
-        </button>
+  return (
+    <div className="container">
+      <div className="video-wrapper">
+        <div className="row">
+          <div className="col">
+            <div className="local-video-wrapper">
+              <Video state={screenState} id="localVideo" reference={refCurrentVideo} />
+              {/* <Video state={screenState} id="remoteVideo" reference={refRemoteVideo} /> */}
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col">
+            <div className="controls">
+              <button
+                disabled={screenState}
+                className="control-btn"
+                onClick={() => getDisplay()}
+              >
+                <ShareScreenIcon />
+              </button>
+              <button
+                className='control-btn'
+                onClick={() => setAudioLocal()}
+              >
+                {
+                  micState ? (
+                    <MicOnIcon />
+                  ) : (
+                      <MicOffIcon />
+                    )
+                }
+              </button>
+
+              <button
+                className="control-btn"
+                onClick={() => setVideoLocal()}
+              >
+                {camState ? <CamOnIcon /> : <CamOffIcon />}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
