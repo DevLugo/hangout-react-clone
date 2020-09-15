@@ -20,6 +20,7 @@ interface Navigator {
 export const Video = ({ match }) => {
   const [localStream, setLocalStream] = useState({});
   const [screenState, setscreenState] = useState(false);
+  const [remoteScreenState, setRemoteScreenState] = useState(false);
   const [camState, setCamState] = useState(false);
   const [micState, setMicState] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -161,6 +162,7 @@ export const Video = ({ match }) => {
     });
 
     peer.on('stream', stream => {
+      setRemoteScreenState((prevState) => !prevState);
       refRemoteVideo.srcObject = stream;
       setConnecting(false);
       setWaiting(false);
@@ -187,11 +189,11 @@ export const Video = ({ match }) => {
   return (
     <div className="container">
       <div className="video-wrapper">
-        <div className="row">
+        <div className="row mb-3">
           <div className="col">
             <div className="local-video-wrapper">
               <Video state={screenState} id="localVideo" reference={refCurrentVideo} />
-              {/* <Video state={screenState} id="remoteVideo" reference={refRemoteVideo} /> */}
+              <Video state={remoteScreenState} id="remoteVideo" reference={refRemoteVideo} />
             </div>
           </div>
         </div>
