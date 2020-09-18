@@ -8,6 +8,7 @@ import { ShareScreenIcon, CamOnIcon, CamOffIcon, MicOffIcon, MicOnIcon } from '.
 import { getDisplayStream } from '../helpers/media-access.ts';
 import VideoCall from '../helpers/simple-peer.ts';
 import { useDidUpdateEffect, useDidMount } from '../hooks/componentDidUpdate';
+import Peer from "simple-peer";
 
 interface Navigator {
   getUserMedia(
@@ -26,87 +27,117 @@ export const Video = ({ match }) => {
   const [full, setFull] = useState(false);
   const [initiator, setInitiator] = useState(false);
   const [loads, setloads] = useState(0);
-  const didMount  = useRef(false);
+  const [yourID, setYourID] = useState(null);
+  const [users, setUsers] = useState({});
+  const [receivingCall, setReceivingCall] = useState(false);
+  const [caller, setCaller] = useState("");
+  const [callerSignal, setCallerSignal] = useState();
+  const [callAccepted, setCallAccepted] = useState(false);
 
-//apply this 
-//https://stackoverflow.com/questions/53179075/with-useeffect-how-can-i-skip-applying-an-effect-upon-the-initial-render
+
+  const didMount  = useRef(false);
+  const roomId = useRef(match.params);
+  console.log("ANTES")
 
   
   const [peer, setPeer] = useState({});
 
-  let videoCall;
+  const videoCall = new VideoCall();
 
-  const [socket, setSocket] = useState(null);
   const refCurrentVideo = useRef(null);
   const refRemoteVideo = useRef(null);
+  const socket  = useRef(null);
 
-  
   useEffect(() => {
-    const socket = io('http://localhost:3333')
-    console.log(process.env.REACT_APP_SIGNALING_SERVER)
-    videoCall = new VideoCall();
-    const { roomId } = match.params;
-    console.log(roomId)
-    getUserMedia().then(() => {
-      socket.emit('join', { roomId: roomId });
-      setVideoLocal()
-    });
-
-    
-
-    socket.on('desc', data => {
-      if (data.type === 'offer' && initiator) return;
-      if (data.type === 'answer' && !initiator) return;
-      call(data)
-    });
-
-    socket.on('disconnected', () => {
-      setInitiator(true);
-    });
-
-    socket.on('full', () => {
-      setFull(true);
+  console.log("DESPUS")
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+      setLocalStream(stream);
+      if (refCurrentVideo.current) {
+        refCurrentVideo.current.srcObject = stream;
+      }
     })
+
+      socket.current = io('http://localhost:3333');
+      socket.current.emit('join', { room: roomId.current });
+      socket.current.on('init', () => {
+        console.log("+++++++++++TTTTTTTTTTTTTTTTT++++++++++++++")
+        setInitiator(true);
+      });
+  
+      socket.current.on("yourID", (id) => {
+        console.log("DAAAS")
+        console.log(id)
+        setYourID(id);
+      })
+      socket.current.on("allUsers", (users) => {
+        setUsers(users);
+      })
+  
+      socket.current.on("hey", (data) => {
+        setReceivingCall(true);
+        setCaller(data.from);
+        setCallerSignal(data.signal);
+      })
   }, []);
 
-  const getUserMedia = () => {
-    return new Promise((resolve, reject) => {
-      navigator.getUserMedia = navigator.getUserMedia =
-        navigator.getUserMedia ||
-        navigator.webkitGetUserMedia ||
-        navigator.mozGetUserMedia;
-      const op = {
-        video: {
-          width: { min: 160, ideal: 640, max: 1280 },
-          height: { min: 120, ideal: 360, max: 720 },
-        },
-        audio: true,
-      };
 
-      navigator.getUserMedia(
-        op,
-        (stream) => {
-          setLocalStream(stream);
-          //refCurrentVideo.current.srcObject = stream;
-          resolve();
-        },
-        (err) => {
-          reject()
-          console.log('Ocurrió el siguiente error: ' + err);
-        }
-      );
-    });
-  };
-
-  
   useEffect(() => {
-    
     if (!didMount.current){
       didMount.current = !didMount.current
     }else{
       refCurrentVideo.current.srcObject = localStream;
+      console.log(refCurrentVideo.current.srcObject)
+      setVideoLocal()
+      setAudioLocal()
+
+    
     }
   }, [localStream])
+
+  
+  function callPeer(id) {
+    console.log("----callPeer----")
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      config: {
+
+        iceServers: [
+            {
+                urls: "stun:numb.viagenie.ca",
+                username: "sultan1640@gmail.com",
+                credential: "98376683"
+            },
+            {
+                urls: "turn:numb.viagenie.ca",
+                username: "sultan1640@gmail.com",
+                credential: "98376683"
+            }
+        ]
+    },
+      stream: localStream,
+    });
+
+    peer.on("signal", data => {
+      console.log("---signal---")
+      socket.current.emit("callUser", { userToCall: id, signalData: data, from: yourID })
+    })
+
+    peer.on("stream", stream => {
+      console.log("---stream---")
+      if (refRemoteVideo.current) {
+        refRemoteVideo.current.srcObject = stream;
+      }
+    });
+
+    socket.current.on("callAccepted", signal => {
+      console.log("---callAccepted---")
+      setCallAccepted(true);
+      peer.signal(signal);
+    })
+
+  }
+
 
   const setAudioLocal = () => {
    if (localStream.getAudioTracks().length > 0)
@@ -126,51 +157,36 @@ export const Video = ({ match }) => {
 
   const getDisplay = () => {
     getDisplayStream().then((stream) => {
+      stream.oninactive = () => {
+        console.log("INACTIVO")
+        peer.removeStream(localStream);
+        getUserMedia().then(() => {
+          peer.addStream(localStream);
+        });
+      }
+
       setLocalStream(stream);
       refCurrentVideo.current.srcObject = stream;
     });
   };
 
-  const enter = roomId => {
-    console.log("SSSAAAS")
+  const acceptCall = () => {
+    setCallAccepted(true);
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: localStream,
+    });
+    peer.on("signal", data => {
+      socket.current.emit("acceptCall", { signal: data, to: caller })
+    })
 
-    //setConnecting(true);
-    setVideoLocal()
-    console.log("YA PASO")
-    //setAudioLocal()
-    return 
-
-    const peer = videoCall.init(
-      localStream,
-      initiator
-    )
-    setPeer(peer);
-    console.log("zzz")
-
-    peer.on('signal', data => {
-      const signal = {
-        room: roomId,
-        desc: data
-      };
-      socket.emit('signal', signal);
+    peer.on("stream", stream => {
+      refRemoteVideo.current.srcObject = stream;
     });
 
-    peer.on('stream', stream => {
-      refRemoteVideo.srcObject = stream;
-      setConnecting(false);
-      setWaiting(false);
-    });
-
-    peer.on('error', err => {
-      console.log(err);
-    });
+    peer.signal(callerSignal);
   }
-
-  const call = otherId => {
-    console.log("--------------")
-    videoCall.connect(otherId);
-  }
-
   const renderFull = () => {
     if (full) return 'The room is full';
   }
@@ -207,6 +223,20 @@ export const Video = ({ match }) => {
         >
           {camState ? <CamOnIcon /> : <CamOffIcon />}
         </button>
+        {Object.keys(users).map(key => {
+          if (key === yourID) {
+            return null;
+          }
+          return (
+            <button onClick={() => callPeer(key)}>Call {key}</button>
+          );
+        })}
+        { receivingCall && 
+        <div>
+        <h1>{caller} is calling you</h1>
+        <button onClick={acceptCall}>Accept</button>
+        </div>
+        }
       </div>
     </div>
   );

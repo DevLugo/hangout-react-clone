@@ -6,22 +6,28 @@ export default class VideoCall {
 
 
     init = (stream, initiator) => {
+        console.log("==========================")
+        console.log(stream)
         this.peer = new SimplePeer({
-            initiator: initiator,
-            stream: stream,
+            initiator: true,
             trickle: false,
-            reconnectTimer: 1000,
-            /*config: {
+            config: {
+
                 iceServers: [
-                    { urls: ['stun:stun4.l.google.com:19302','turn:numb.viagenie.ca'] },
                     {
-                        urls: ['stun:stun4.l.google.com:19302','turn:numb.viagenie.ca'],
-                        username: 'elugo.isi@gmail.com',
-                        credential: 'ronaldo2'
+                        urls: "stun:numb.viagenie.ca",
+                        username: "sultan1640@gmail.com",
+                        credential: "98376683"
                     },
+                    {
+                        urls: "turn:numb.viagenie.ca",
+                        username: "sultan1640@gmail.com",
+                        credential: "98376683"
+                    }
                 ]
-            }*/
-        })
+            },
+            stream: stream,
+            });
         return this.peer
 
     }
