@@ -55,7 +55,7 @@ export const Video = ({ match }) => {
       }
     })
 
-      socket.current = io('/api/');
+      socket.current = io('http://18.223.152.29:3333/api');
       socket.current.emit('join', { room: roomId.current });
       socket.current.on('init', () => {
         console.log("+++++++++++TTTTTTTTTTTTTTTTT++++++++++++++")
