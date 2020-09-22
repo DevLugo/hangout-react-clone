@@ -1,18 +1,16 @@
-import SimplePeer from "simple-peer";
+import Peer from "simple-peer";
 
 export default class VideoCall {
     
-    private peer: SimplePeer.Instance;
-
+    private peer: Peer.Instance;
 
     init = (stream, initiator) => {
         console.log("==========================")
         console.log(stream)
-        this.peer = new SimplePeer({
-            initiator: true,
+        this.peer = new Peer({
+            initiator: initiator,
             trickle: false,
             config: {
-
                 iceServers: [
                     {
                         urls: "stun:numb.viagenie.ca",
@@ -29,9 +27,5 @@ export default class VideoCall {
             stream: stream,
             });
         return this.peer
-
-    }
-    connect = (otherId) => {
-        this.peer.signal(otherId)
     }
 }

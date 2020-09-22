@@ -1,3 +1,4 @@
 export async function getDisplayStream() {
-  return navigator.mediaDevices.getDisplayMedia();
+  const mediaDevices = navigator.mediaDevices as any
+  return mediaDevices.getDisplayMedia();
 }

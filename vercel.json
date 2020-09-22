@@ -8,8 +8,9 @@
     "routes": [
       { "src": "/api/(.*)", "dest": "/dist/apps/api/main.js" },
       { "handle": "filesystem" },
-      { "src": "/assets/(.*)", "dest": "/dist/apps/myapp/assets/$1"},
-      { "src": "/(.*).(js|css|ico)", "dest": "/dist/apps/myapp/$1.$2" },
-      { "src": "/(.*)", "dest": "/dist/apps/chat-client/index.html" }
+      { "src": "/assets/(.*)", "dest": "/dist/apps/chat-client/assets/$1"},
+      { "src": "/(.*).(js|css|ico)", "dest": "/dist/apps/chat-client/$1.$2" },
+      { "src": "/chat/(.*)", "dest": "/dist/apps/chat-client/index.html" }
+      
     ]
   }

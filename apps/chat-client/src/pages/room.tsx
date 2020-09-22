@@ -8,7 +8,7 @@ export const Room = () => {
     return (
         <div>
             <h1>PAGE FOR CHAT</h1>
-            <Video/>
+            
         </div>
       );
 }

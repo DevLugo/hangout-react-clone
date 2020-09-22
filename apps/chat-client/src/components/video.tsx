@@ -3,23 +3,23 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // Libraries
 import io from 'socket.io-client';
-
+console.log("---------------HÑA MUNDO------------------")
 import { ShareScreenIcon, CamOnIcon, CamOffIcon, MicOffIcon, MicOnIcon } from './icons';
-import { getDisplayStream } from '../helpers/media-access.ts';
-import VideoCall from '../helpers/simple-peer.ts';
-import { useDidUpdateEffect, useDidMount } from '../hooks/componentDidUpdate';
+import { getDisplayStream } from '../helpers/media-access';
+import VideoCall from '../helpers/simple-peer';
+//import { useDidUpdateEffect, useDidMount } from '../hooks/componentDidUpdate';
 import Peer from "simple-peer";
 
-interface Navigator {
+/*interface Navigator {
   getUserMedia(
     options: { video?: bool; audio?: bool },
     success: (stream) => void,
     error?: (error: string) => void
   ): void;
-}
+}*/
 
 export const Video = ({ match }) => {
-  const [localStream, setLocalStream] = useState({});
+  const [localStream, setLocalStream] = useState<MediaStream>(undefined);
   const [camState, setCamState] = useState(false);
   const [micState, setMicState] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -34,15 +34,13 @@ export const Video = ({ match }) => {
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
 
-
   const didMount  = useRef(false);
   const roomId = useRef(match.params);
-  console.log("ANTES")
+  console.log("ANTESssss")
 
-  
-  const [peer, setPeer] = useState({});
+  const peerRef = useRef<any>(undefined) 
+  //const [peer, setPeer] = useState<any>({});
 
-  const videoCall = new VideoCall();
 
   const refCurrentVideo = useRef(null);
   const refRemoteVideo = useRef(null);
@@ -57,7 +55,7 @@ export const Video = ({ match }) => {
       }
     })
 
-      socket.current = io('http://localhost:3333');
+      socket.current = io('/api/');
       socket.current.emit('join', { room: roomId.current });
       socket.current.on('init', () => {
         console.log("+++++++++++TTTTTTTTTTTTTTTTT++++++++++++++")
@@ -96,34 +94,33 @@ export const Video = ({ match }) => {
 
   
   function callPeer(id) {
-    console.log("----callPeer----")
-    const peer = new Peer({
+    console.log("----callPeer----");
+    peerRef.current = new Peer({
       initiator: true,
       trickle: false,
       config: {
-
-        iceServers: [
-            {
-                urls: "stun:numb.viagenie.ca",
-                username: "sultan1640@gmail.com",
-                credential: "98376683"
-            },
-            {
-                urls: "turn:numb.viagenie.ca",
-                username: "sultan1640@gmail.com",
-                credential: "98376683"
-            }
-        ]
-    },
+          iceServers: [
+              {
+                  urls: "stun:numb.viagenie.ca",
+                  username: "sultan1640@gmail.com",
+                  credential: "98376683"
+              },
+              {
+                  urls: "turn:numb.viagenie.ca",
+                  username: "sultan1640@gmail.com",
+                  credential: "98376683"
+              }
+          ]
+      },
       stream: localStream,
-    });
+      });
 
-    peer.on("signal", data => {
+    peerRef.current.on("signal", data => {
       console.log("---signal---")
       socket.current.emit("callUser", { userToCall: id, signalData: data, from: yourID })
     })
 
-    peer.on("stream", stream => {
+    peerRef.current.on("stream", stream => {
       console.log("---stream---")
       if (refRemoteVideo.current) {
         refRemoteVideo.current.srcObject = stream;
@@ -133,11 +130,10 @@ export const Video = ({ match }) => {
     socket.current.on("callAccepted", signal => {
       console.log("---callAccepted---")
       setCallAccepted(true);
-      peer.signal(signal);
+      peerRef.current.signal(signal);
     })
 
   }
-
 
   const setAudioLocal = () => {
    if (localStream.getAudioTracks().length > 0)
@@ -159,10 +155,10 @@ export const Video = ({ match }) => {
     getDisplayStream().then((stream) => {
       stream.oninactive = () => {
         console.log("INACTIVO")
-        peer.removeStream(localStream);
-        getUserMedia().then(() => {
+        //peer.removeStream(localStream);
+        /*getUserMedia().then(() => {
           peer.addStream(localStream);
-        });
+        });*/
       }
 
       setLocalStream(stream);
@@ -172,7 +168,7 @@ export const Video = ({ match }) => {
 
   const acceptCall = () => {
     setCallAccepted(true);
-    const peer = new Peer({
+    const peer: any = new Peer({
       initiator: false,
       trickle: false,
       stream: localStream,

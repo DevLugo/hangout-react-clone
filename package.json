@@ -24,7 +24,7 @@
     "workspace-schematic": "nx workspace-schematic",
     "dep-graph": "nx dep-graph",
     "help": "nx help",
-    "vercel-build": "nx build chat-client"
+    "vercel-build": "nx build chat-client && nx build api"
   },
   "private": true,
   "dependencies": {
