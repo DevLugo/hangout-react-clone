@@ -6,11 +6,10 @@
       { "src": "/dist/apps/chat-client/*", "use": "@now/static" }
     ],
     "routes": [
-      { "src": "/api/(.*)", "dest": "/dist/apps/api/main.js" },
       { "handle": "filesystem" },
       { "src": "/assets/(.*)", "dest": "/dist/apps/chat-client/assets/$1"},
       { "src": "/(.*).(js|css|ico)", "dest": "/dist/apps/chat-client/$1.$2" },
-      { "src": "/chat/(.*)", "dest": "/dist/apps/chat-client/index.html" }
+      { "src": "/(.*)", "dest": "/dist/apps/chat-client/index.html" }
       
     ]
   }
