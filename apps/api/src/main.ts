@@ -26,7 +26,7 @@ const options: cors.CorsOptions = {
   origin: 'http://localhost:4200',
   preflightContinue: false,
 };
-app.use(cors());
+app.use(cors(options));
 
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to api!' });
