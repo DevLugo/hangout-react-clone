@@ -5,11 +5,15 @@
 import { v4 as uuid } from 'uuid';
 import * as express from 'express';
 import ioserver, { Socket } from 'socket.io';
+import * as cors from 'cors';
+ 
 
 const app = express();
 const server = require('http').Server(app);
 const io = ioserver(server);
 const { uuid: uuidV4 } = uuid('uuid')
+
+app.use(cors());
 
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to api!' });

@@ -28,8 +28,10 @@
   },
   "private": true,
   "dependencies": {
+    "@types/cors": "^2.8.7",
     "@types/simple-peer": "^9.6.0",
     "bootstrap": "^4.5.2",
+    "cors": "^2.8.5",
     "document-register-element": "1.13.1",
     "express": "4.17.1",
     "node-sass": "^4.14.1",
